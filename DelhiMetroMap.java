@@ -1,39 +1,40 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class DelhiMetroMap {
     public DelhiMetroMap() {
         StationsVer = new HashMap<>();
     }
 
-    public class Vertex {
+    public static class Vertex {
         HashMap<String, Integer> neighbours = new HashMap<>();
     }
 
     // FUNCTIONS FOR VERTICES StationsVer
     static HashMap<String, Vertex> StationsVer;
 
-    public int numOfVetex() {
+    public int numOfVertex() {
         return StationsVer.size();
     }
 
-    public boolean containsStations(String vname) {
-        return StationsVer.containsKey(vname);
+    public boolean containsStations(String vertexName) {
+
+        return StationsVer.containsKey(vertexName);
     }
 
-    public void addVertex(String vname) {
+    public void addVertex(String vertexName) {
         Vertex vtx = new Vertex();
-        StationsVer.put(vname, vtx);
+        StationsVer.put(vertexName, vtx);
     }
 
-    public void removeVertex(String vname) {
-        Vertex vtx = StationsVer.get(vname);
+    public void removeVertex(String vertexName) {
+        Vertex vtx = StationsVer.get(vertexName);
         ArrayList<String> keys = new ArrayList<>(vtx.neighbours.keySet());
         for (String key : keys) {
             Vertex nbrVtx = StationsVer.get(key);
-            nbrVtx.neighbours.remove(vname);
+            nbrVtx.neighbours.remove(vertexName);
         }
-        StationsVer.remove(vname);
+        StationsVer.remove(vertexName);
 
     }
 
@@ -51,7 +52,7 @@ public class DelhiMetroMap {
     public boolean containsEdge(String vname1, String vname2) {
         Vertex vtx1 = StationsVer.get(vname1);
         Vertex vtx2 = StationsVer.get(vname2);
-        if (vtx1 == null || vtx2 == null || !vtx1.neighbours.containsKey(vname2))
+        if(vtx1 == null || vtx2 == null || !vtx1.neighbours.containsKey(vname2))
             return false;
         return true;
     }
@@ -133,7 +134,7 @@ public class DelhiMetroMap {
     }
 
     // DjPair class for Priority Queues
-    private class DjPair implements Comparable<DjPair> {
+    private static class DjPair implements Comparable<DjPair> {
         String vname;
         int distCost;
 
@@ -143,7 +144,7 @@ public class DelhiMetroMap {
         }
     }
 
-    // Shortest Path algo = Dijkstras
+    // Shortest Path algo = Dijkstra's
     public int dijkstra(String src, String des, boolean nan) {
         int val = 0;
         HashMap<String, DjPair> unVisited = new HashMap<>();
@@ -345,12 +346,12 @@ public class DelhiMetroMap {
             System.out.println(
                     "5. GET Shortest PATH (DISTANCE WISE) TO REACH FROM A 'SOURCE' STATION TO 'DESTINATION' STATION");
             System.out.println("6. EXIT THE MENU");
-            System.out.println("\nENTER YOUR CHOICE FROM THE ABOVE LIST (1 to 6) : ");
+            System.out.print("\nENTER YOUR CHOICE FROM THE ABOVE LIST (1 to 6) : ");
             int choice = -1;
 
             try {
                 choice = Integer.parseInt(inp.readLine());
-            } catch (Exception e) {
+            } catch (NumberFormatException | IOException e) {
                 // default will handle
             }
             System.out.print("\n***********************************************************\n");
@@ -359,13 +360,9 @@ public class DelhiMetroMap {
                 System.exit(0);
 
             switch (choice) {
-                case 1:
-                    g.display_Stations();
-                    break;
-                case 2:
-                    g.display_Map();
-                    break;
-                case 3:
+                case 1 -> g.display_Stations();
+                case 2 -> g.display_Map();
+                case 3 -> {
                     ArrayList<String> keys = new ArrayList<>(StationsVer.keySet());
                     printCodelist();
                     System.out.println("Enter 1 :");
@@ -386,9 +383,8 @@ public class DelhiMetroMap {
                     else
                         System.out.println("Shortest DISTANCE from " + st1 + " TO " + st2 + " IS-----> "
                                 + g.dijkstra(st1, st2, false) + "KM\n");
-                    break;
-
-                case 4:
+                }
+                case 4 -> {
                     ArrayList<String> keyss = new ArrayList<>(StationsVer.keySet());
                     printCodelist();
                     String strr1;
@@ -407,37 +403,51 @@ public class DelhiMetroMap {
                         System.out.println(
                                 "Shortest Time from " + strr1 + " TO " + strr2 + " IS-----> " + calcVal + " Minutes\n");
                     }
-                    break;
-                case 5:
-                    System.out.println("ENTER THE SOURCE AND DESTINATION STATIONS");
-                    String s1 = inp.readLine();
-                    String s2 = inp.readLine();
+                }
+                case 5 -> {
+                    System.out.println("ENTER THE SOURCE AND DESTINATION STATIONS' SERIAL NUMBERS");
+                    ArrayList<String> keys = new ArrayList<>(StationsVer.keySet());
+                    printCodelist(); // Print the list of stations with serial numbers
+
+                    System.out.print("Enter Source = ");
+                    int sourceIndex = Integer.parseInt(inp.readLine()) - 1;
+                    System.out.print("Enter Destination = ");
+                    int destinationIndex = Integer.parseInt(inp.readLine()) - 1;
+
+                    if (sourceIndex < 0 || sourceIndex >= keys.size() || destinationIndex < 0
+                            || destinationIndex >= keys.size()) {
+                        System.out.println("THE INPUTS ARE INVALID");
+                        break;
+                    }
+
+                    String s1 = keys.get(sourceIndex);
+                    String s2 = keys.get(destinationIndex);
 
                     HashMap<String, Boolean> processed2 = new HashMap<>();
-                    if (!g.containsStations(s1) || !g.containsStations(s2) || !g.hasPath(s1, s2, processed2))
+                    if (!g.containsStations(s1) || !g.containsStations(s2) || !g.hasPath(s1, s2, processed2)) {
                         System.out.println("THE INPUTS ARE INVALID");
-                    else {
+                    } else {
                         ArrayList<String> str = g.get_Interchanges(g.getMinimumDistance(s1, s2));
                         int len = str.size();
                         System.out.println("------------------------------------");
 
                         System.out.println("SOURCE STATION : " + s1);
-                        System.out.println("SOURCE STATION : " + s2);
+                        System.out.println("DESTINATION STATION : " + s2);
                         System.out.println("DISTANCE : " + str.get(len - 1));
                         System.out.println("NUMBER OF INTERCHANGES : " + str.get(len - 2));
-                        // System.out.println(str);
                         System.out.println("~~~~~~~~~~~~~");
                         System.out.println("START  ==>  " + str.get(0));
-                        for (int i = 1; i < len - 3; i++)
+                        for (int i = 1; i < len - 3; i++) {
                             System.out.println(str.get(i));
+                        }
                         System.out.print(str.get(len - 3) + "   ==>    END");
                         System.out.println("\n~~~~~~~~~~~~~");
                     }
-                    break;
-
-                default:
+                }
+                default -> {
                     System.out.println("Please enter a valid option! ");
                     System.out.println("The options you can choose are from 1 to 6. ");
+                }
             }
         }
     }
